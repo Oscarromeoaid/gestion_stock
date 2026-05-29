@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ExportController;
 
-
 // Page d'accueil publique (redirection vers login)
 Route::get('/', function () {
     return redirect()->route('login');
@@ -34,6 +33,19 @@ Route::get('/debug-auth', function () {
         'db_name' => \Illuminate\Support\Facades\DB::connection()->getDatabaseName(),
         'db_host' => config('database.connections.mysql.host'),
     ]);
+});
+
+// CRÉATION ADMIN TEMPORAIRE - à supprimer après
+Route::get('/create-admin', function () {
+    \Illuminate\Support\Facades\DB::table('users')->insert([
+        'name' => 'Admin',
+        'email' => 'admin@gestion-stock.com',
+        'password' => \Illuminate\Support\Facades\Hash::make('password123'),
+        'email_verified_at' => now(),
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+    return 'Admin créé avec succès !';
 });
 
 // Routes protégées par authentification
