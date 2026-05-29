@@ -17,6 +17,25 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+// DEBUG TEMPORAIRE - à supprimer après
+Route::get('/debug-auth', function () {
+    $user = \App\Models\User::where('email', 'admin@gestion-stock.com')->first();
+    $hashCheck = $user ? \Illuminate\Support\Facades\Hash::check('password123', $user->password) : false;
+    $attempt = \Illuminate\Support\Facades\Auth::attempt([
+        'email' => 'admin@gestion-stock.com',
+        'password' => 'password123'
+    ]);
+    return response()->json([
+        'user_found' => $user ? true : false,
+        'user_id' => $user->id ?? null,
+        'email_verified' => $user->email_verified_at ?? null,
+        'hash_check' => $hashCheck,
+        'auth_attempt' => $attempt,
+        'db_name' => \Illuminate\Support\Facades\DB::connection()->getDatabaseName(),
+        'db_host' => config('database.connections.mysql.host'),
+    ]);
+});
+
 // Routes protégées par authentification
 Route::middleware(['auth'])->group(function () {
 
@@ -40,7 +59,7 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-     // Notifications
+    // Notifications
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.readAll');
