@@ -50,39 +50,56 @@ Route::get('/create-admin', function () {
 
 // IMPORT DONNÉES TEMPORAIRE - à supprimer après
 Route::get('/import-data', function () {
-    $data = json_decode(file_get_contents(base_path('database_export.json')), true);
+    try {
+        $path = base_path('database_export.json');
 
-    // Catégories
-    \Illuminate\Support\Facades\DB::table('categories')->truncate();
-    foreach ($data['categories'] as $item) {
-        \Illuminate\Support\Facades\DB::table('categories')->insert($item);
+        if (!file_exists($path)) {
+            return response()->json(['error' => 'Fichier introuvable', 'path' => $path]);
+        }
+
+        $data = json_decode(file_get_contents($path), true);
+
+        if (!$data) {
+            return response()->json(['error' => 'JSON invalide']);
+        }
+
+        \Illuminate\Support\Facades\DB::statement('SET FOREIGN_KEY_CHECKS=0');
+
+        \Illuminate\Support\Facades\DB::table('mouvements')->truncate();
+        \Illuminate\Support\Facades\DB::table('produits')->truncate();
+        \Illuminate\Support\Facades\DB::table('fournisseurs')->truncate();
+        \Illuminate\Support\Facades\DB::table('categories')->truncate();
+
+        foreach ($data['categories'] as $item) {
+            \Illuminate\Support\Facades\DB::table('categories')->insert($item);
+        }
+        foreach ($data['fournisseurs'] as $item) {
+            \Illuminate\Support\Facades\DB::table('fournisseurs')->insert($item);
+        }
+        foreach ($data['produits'] as $item) {
+            \Illuminate\Support\Facades\DB::table('produits')->insert($item);
+        }
+        foreach ($data['mouvements'] as $item) {
+            \Illuminate\Support\Facades\DB::table('mouvements')->insert($item);
+        }
+
+        \Illuminate\Support\Facades\DB::statement('SET FOREIGN_KEY_CHECKS=1');
+
+        return response()->json([
+            'status' => 'success',
+            'categories' => count($data['categories']),
+            'fournisseurs' => count($data['fournisseurs']),
+            'produits' => count($data['produits']),
+            'mouvements' => count($data['mouvements']),
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage(),
+            'line' => $e->getLine(),
+            'file' => $e->getFile(),
+        ]);
     }
-
-    // Fournisseurs
-    \Illuminate\Support\Facades\DB::table('fournisseurs')->truncate();
-    foreach ($data['fournisseurs'] as $item) {
-        \Illuminate\Support\Facades\DB::table('fournisseurs')->insert($item);
-    }
-
-    // Produits
-    \Illuminate\Support\Facades\DB::table('produits')->truncate();
-    foreach ($data['produits'] as $item) {
-        \Illuminate\Support\Facades\DB::table('produits')->insert($item);
-    }
-
-    // Mouvements
-    \Illuminate\Support\Facades\DB::table('mouvements')->truncate();
-    foreach ($data['mouvements'] as $item) {
-        \Illuminate\Support\Facades\DB::table('mouvements')->insert($item);
-    }
-
-    return response()->json([
-        'status' => 'success',
-        'categories' => count($data['categories']),
-        'fournisseurs' => count($data['fournisseurs']),
-        'produits' => count($data['produits']),
-        'mouvements' => count($data['mouvements']),
-    ]);
 });
 
 // Routes protégées par authentification
