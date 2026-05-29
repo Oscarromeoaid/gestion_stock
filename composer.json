@@ -51,6 +51,10 @@
             "@php artisan config:clear --ansi",
             "@php artisan test"
         ],
+        "vercel": [
+            "npm ci",
+            "npm run build"
+        ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"
@@ -76,14 +80,21 @@
         }
     },
     "config": {
-        "optimize-autoloader": true,
-        "preferred-install": "dist",
-        "sort-packages": true,
-        "allow-plugins": {
-            "pestphp/pest-plugin": true,
-            "php-http/discovery": true
-        }
+    "optimize-autoloader": true,
+    "preferred-install": "dist",
+    "sort-packages": true,
+    "allow-plugins": {
+        "pestphp/pest-plugin": true,
+        "php-http/discovery": true
     },
-    "minimum-stability": "stable",
-    "prefer-stable": true
+    "platform": {
+        "ext-gd": "1.0",
+        "ext-zip": "1.0",
+        "ext-xml": "1.0",
+        "ext-xmlreader": "1.0",
+        "ext-xmlwriter": "1.0",
+        "ext-dom": "1.0"
+    }
+}
+
 }
