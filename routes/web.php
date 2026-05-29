@@ -63,6 +63,16 @@ Route::get('/import-data', function () {
             return response()->json(['error' => 'JSON invalide']);
         }
 
+        // Fonction pour convertir les dates
+        $fixDates = function($item) {
+            foreach ($item as $key => $value) {
+                if (in_array($key, ['created_at', 'updated_at', 'date_mouvement', 'email_verified_at']) && $value) {
+                    $item[$key] = \Carbon\Carbon::parse($value)->format('Y-m-d H:i:s');
+                }
+            }
+            return $item;
+        };
+
         \Illuminate\Support\Facades\DB::statement('SET FOREIGN_KEY_CHECKS=0');
 
         \Illuminate\Support\Facades\DB::table('mouvements')->truncate();
@@ -71,16 +81,16 @@ Route::get('/import-data', function () {
         \Illuminate\Support\Facades\DB::table('categories')->truncate();
 
         foreach ($data['categories'] as $item) {
-            \Illuminate\Support\Facades\DB::table('categories')->insert($item);
+            \Illuminate\Support\Facades\DB::table('categories')->insert($fixDates($item));
         }
         foreach ($data['fournisseurs'] as $item) {
-            \Illuminate\Support\Facades\DB::table('fournisseurs')->insert($item);
+            \Illuminate\Support\Facades\DB::table('fournisseurs')->insert($fixDates($item));
         }
         foreach ($data['produits'] as $item) {
-            \Illuminate\Support\Facades\DB::table('produits')->insert($item);
+            \Illuminate\Support\Facades\DB::table('produits')->insert($fixDates($item));
         }
         foreach ($data['mouvements'] as $item) {
-            \Illuminate\Support\Facades\DB::table('mouvements')->insert($item);
+            \Illuminate\Support\Facades\DB::table('mouvements')->insert($fixDates($item));
         }
 
         \Illuminate\Support\Facades\DB::statement('SET FOREIGN_KEY_CHECKS=1');
@@ -97,7 +107,6 @@ Route::get('/import-data', function () {
         return response()->json([
             'error' => $e->getMessage(),
             'line' => $e->getLine(),
-            'file' => $e->getFile(),
         ]);
     }
 });
