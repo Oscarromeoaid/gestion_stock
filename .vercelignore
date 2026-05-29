@@ -1,0 +1,15 @@
+.env
+.env.*
+.git
+.vercel
+.idea
+.vscode
+node_modules
+vendor
+database/*.sqlite*
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+Homestead.json
+Homestead.yaml
