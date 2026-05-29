@@ -7,6 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class LoginRequest extends FormRequest
@@ -39,16 +40,25 @@ class LoginRequest extends FormRequest
      */
     public function authenticate(): void
 {
-    // $this->ensureIsNotRateLimited(); // ← commente cette ligne
+    // $this->ensureIsNotRateLimited();
+
+    Log::info('=== LOGIN REQUEST ===');
+    Log::info('Email reçu: ' . $this->input('email'));
+    Log::info('Password reçu: ' . $this->input('password'));
+
+    $user = \App\Models\User::where('email', $this->input('email'))->first();
+    Log::info('User trouvé: ' . ($user ? 'OUI - ID:'.$user->id : 'NON'));
+
+    if ($user) {
+        $check = \Illuminate\Support\Facades\Hash::check($this->input('password'), $user->password);
+        Log::info('Hash check: ' . ($check ? 'TRUE' : 'FALSE'));
+    }
 
     if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
-        // RateLimiter::hit($this->throttleKey()); // ← commente cette ligne
         throw ValidationException::withMessages([
             'email' => trans('auth.failed'),
         ]);
     }
-
-    // RateLimiter::clear($this->throttleKey()); // ← commente cette ligne
 }
 
     /**
